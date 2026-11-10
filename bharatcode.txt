@@ -1,0 +1,98 @@
+Rewind — BharatCode Qwen Integration
+======================================
+
+Project
+-------
+Rewind is an AI-agent debugging and verified-repair platform. It is designed to
+help developers inspect agent runs, understand failures, review possible fixes,
+and verify outcomes.
+
+BharatCode provider configuration
+---------------------------------
+The following environment variables can be used when the BharatCode Qwen
+provider is configured in the backend:
+
+    BHARATCODE_API_KEY=<your-api-key>
+    BHARATCODE_BASE_URL=https://bharatcode.ai/api/model/v1
+    BHARATCODE_MODEL=qwen-3.8-27b
+
+Keep the API key in a local, untracked .env file or deployment secret store.
+Never commit real credentials to GitHub. Do not place API keys in frontend
+code or expose them to the browser.
+
+Expected API integration
+------------------------
+When enabled, the backend can call:
+
+    <BHARATCODE_BASE_URL>/chat/completions
+
+The integration should:
+- Use the configured model name.
+- Request structured JSON output where supported.
+- Apply a bounded request timeout.
+- Handle authentication, rate-limit, timeout, invalid-response, and provider
+  errors explicitly.
+- Assign a request/correlation ID for troubleshooting.
+- Avoid logging API keys, full prompts, or sensitive response content.
+
+Potential Rewind AI use cases
+-----------------------------
+1. Run diagnosis:
+   Analyze a sanitized execution summary, error category, and relevant
+   non-sensitive log excerpts to produce a structured diagnosis.
+
+2. Failure explanation:
+   Explain likely causes of a failed agent run using the execution metadata
+   and evidence supplied by the backend.
+
+3. Repair recommendations:
+   Suggest a possible code or configuration change for developer review.
+   Suggestions must be treated as proposals, not automatically trusted fixes.
+
+4. Verification interpretation:
+   Summarize test and replay results that the backend has already collected.
+   The model must not invent a passing test, successful replay, or repaired
+   status.
+
+5. Run summaries:
+   Turn stored execution metadata into concise, readable summaries for the
+   dashboard and run-details views.
+
+Safety and data-handling boundaries
+-----------------------------------
+- Send only the minimum sanitized execution context needed for a task.
+- Do not send secrets, API keys, passwords, access tokens, private user data,
+  or unrelated source files to the model.
+- Do not send entire repositories or unrestricted environment contents.
+- Redact sensitive values from logs before any provider request.
+- Validate model responses against backend-defined schemas (for example,
+  Pydantic models) before using them.
+- Treat model output as untrusted input.
+- The model may explain failures and recommend changes, but it must not
+  independently execute shell commands, modify files, deploy code, or approve
+  a repair.
+- Any repair workflow should require explicit developer review and a separate
+  backend-controlled verification step.
+- Test results, run status, timestamps, and verification outcomes must come
+  from actual backend execution records, not model-generated claims.
+- Keep demo/seed data clearly labelled and separate from real execution data.
+
+Verification expectations
+-------------------------
+Before describing the BharatCode integration as operational, verify that:
+- The backend reads provider settings from environment variables.
+- A real request reaches BharatCode using the configured model.
+- Provider failures are handled without crashing the application.
+- Sensitive data is excluded from logs and provider requests.
+- The response is schema-validated before display or storage.
+- Diagnosis and repair recommendations are visibly distinguished from
+  confirmed execution and verification results.
+- The integration is tested without exposing the API key.
+
+Implementation status
+---------------------
+This file documents the intended BharatCode/Qwen integration contract for
+the Rewind submission. It is not proof that the provider integration is
+already implemented or active in the codebase. Update this section after
+checking the backend implementation and running a real, authorized provider
+test. Do not claim features as implemented unless they have been verified.
