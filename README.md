@@ -180,7 +180,7 @@ git status
 git commit -m "Initial commit - Rewind project"
 Connect your GitHub repository (replace the URL with your own):
 
-git remote add origin https://github.com/YOUR-USERNAME/rewind.git
+git remote add origin https://github.com/harshinir01/rewind.git
 git branch -M main
 git push -u origin main
 Before committing, make sure .venv/, node_modules/, .env files,
