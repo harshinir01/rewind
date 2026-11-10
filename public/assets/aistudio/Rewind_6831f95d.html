@@ -1,0 +1,712 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Rewind</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: friendly left nav + one working column. A faint dot grid and ring pattern sit behind everything; content lives on solid cards. */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#2A1216; --muted:#7A6468; --line:#EBD9DD;
+  --accent:#DC143C; --accent-ink:#B00E2E; --accent-soft:#FDECEF; --accent-line:#F4C2CB; --on-accent:#FFFFFF;
+  --ok:#2F7D5B; --ok-soft:#E6F1EB; --code-bg:#FBF4F5; --hover:#FBF0F2;
+  --bad:#DC143C; --bad-ink:#B00E2E; --bad-soft:#FDECEF; --bad-line:#F4C2CB;
+  --sans:'Fraunces',Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --s-xs:13px; --s-sm:15px; --s-md:17px; --s-xl:30px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#160A0D; --surface:#1F1013; --ink:#F7ECEE; --muted:#B59AA0; --line:#3A2227;
+  --accent:#FF4D6D; --accent-ink:#FF7A92; --accent-soft:#2E1218; --accent-line:#6A2433; --on-accent:#1A0A0D;
+  --ok:#5BB38A; --ok-soft:#14261D; --code-bg:#1A0D10; --hover:#2A171B;
+  --bad:#FF4D6D; --bad-ink:#FF7A92; --bad-soft:#2E1218; --bad-line:#6A2433; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#160A0D; --surface:#1F1013; --ink:#F7ECEE; --muted:#B59AA0; --line:#3A2227;
+  --accent:#FF4D6D; --accent-ink:#FF7A92; --accent-soft:#2E1218; --accent-line:#6A2433; --on-accent:#1A0A0D;
+  --ok:#5BB38A; --ok-soft:#14261D; --code-bg:#1A0D10; --hover:#2A171B;
+  --bad:#FF4D6D; --bad-ink:#FF7A92; --bad-soft:#2E1218; --bad-line:#6A2433; color-scheme:dark}
+
+/* Palettes. Crimson is the default above. The page script always sets data-theme, so these only need light and dark pairs. */
+:root[data-palette="navy"]{
+  --bg:#F5F7FB; --surface:#FFFFFF; --ink:#0E1A33; --muted:#5A6682; --line:#DAE1EE;
+  --accent:#1E3A8A; --accent-ink:#1E3A8A; --accent-soft:#E8EEFB; --accent-line:#C5D3F2; --on-accent:#FFFFFF;
+  --ok:#2F7D5B; --ok-soft:#E6F1EB; --code-bg:#EFF2F8; --hover:#EDF1F8;
+  --bad:#C8321E; --bad-ink:#A3260F; --bad-soft:#FBEAE6; --bad-line:#F0C5BC}
+:root[data-palette="navy"][data-theme="dark"]{
+  --bg:#0B1325; --surface:#121C33; --ink:#E8EDF8; --muted:#9AA7C4; --line:#25324F;
+  --accent:#7FA2FF; --accent-ink:#9DB8FF; --accent-soft:#16233F; --accent-line:#2E4478; --on-accent:#0B1325;
+  --ok:#5BB38A; --ok-soft:#14261D; --code-bg:#0F182C; --hover:#19243F;
+  --bad:#FF7A66; --bad-ink:#FF9A8A; --bad-soft:#2D1A1A; --bad-line:#6A2F2A; color-scheme:dark}
+:root[data-palette="olive"]{
+  --bg:#F8F3E3; --surface:#FFFDF6; --ink:#232612; --muted:#6B6D4A; --line:#E3DCC0;
+  --accent:#5B6B22; --accent-ink:#4A5A18; --accent-soft:#EEF0D8; --accent-line:#D3D9A8; --on-accent:#FFFFFF;
+  --ok:#3B7A4E; --ok-soft:#E3EFDF; --code-bg:#F3EDD6; --hover:#F1EBD3;
+  --bad:#B8431F; --bad-ink:#963514; --bad-soft:#F8E6DC; --bad-line:#EBC3AE}
+:root[data-palette="olive"][data-theme="dark"]{
+  --bg:#14160A; --surface:#1C1F10; --ink:#F1EEDC; --muted:#B2B58E; --line:#333820;
+  --accent:#A9C25A; --accent-ink:#BFD477; --accent-soft:#232A12; --accent-line:#4A5A24; --on-accent:#14160A;
+  --ok:#7BC59A; --ok-soft:#16261C; --code-bg:#181B0C; --hover:#25291A;
+  --bad:#FF8A5C; --bad-ink:#FFA680; --bad-soft:#2D1C12; --bad-line:#6A3A22; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 var(--s-sm)/1.55 var(--sans);border-top:4px solid var(--accent);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+h1,h2,h3,p{margin:0}
+h1{font-size:var(--s-xl);line-height:1.2;font-weight:600;letter-spacing:-.01em;color:var(--accent)}
+h2{font-size:var(--s-md);font-weight:600}
+h3{font-size:var(--s-xs);font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* background design */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg .dots{position:absolute;inset:0;background-image:radial-gradient(color-mix(in srgb,var(--accent) 24%,transparent) 1.2px,transparent 1.6px);background-size:26px 26px;-webkit-mask-image:linear-gradient(180deg,#000 0,transparent 60%);mask-image:linear-gradient(180deg,#000 0,transparent 60%)}
+.bg .rings{position:absolute;right:-200px;top:-200px;width:600px;height:600px;border-radius:50%;background:repeating-radial-gradient(circle at center,transparent 0 32px,color-mix(in srgb,var(--accent) 18%,transparent) 32px 33.5px);-webkit-mask-image:radial-gradient(circle,#000 25%,transparent 68%);mask-image:radial-gradient(circle,#000 25%,transparent 68%)}
+.bg .rings.b{right:auto;top:auto;left:-240px;bottom:-260px;width:560px;height:560px}
+
+.app{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding-block:24px 56px;display:grid;grid-template-columns:208px minmax(0,1fr);gap:32px}
+.side{display:flex;flex-direction:column;gap:24px;position:sticky;top:max(24px,env(safe-area-inset-top,0px));align-self:start}
+.brand{display:flex;flex-direction:column;gap:2px;text-decoration:none}
+.brand b{display:flex;align-items:center;gap:8px;font-weight:600;font-size:22px;color:var(--accent)}
+.brand b .ic{stroke-width:2}
+.brand span{font-size:var(--s-xs);color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:10px;min-height:38px;padding:6px 10px;border-radius:8px;text-decoration:none;color:var(--muted);line-height:1.25;transition:background .15s ease-out,color .15s ease-out}
+.nav a:hover{background:var(--hover);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-line)}
+.side .foot{display:flex;flex-direction:column;gap:12px;color:var(--muted);font-size:var(--s-xs)}
+.proj{display:flex;flex-direction:column;gap:2px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.proj b{font-weight:500;color:var(--ink);font-size:var(--s-xs)}
+.palwrap{display:flex;flex-direction:column;gap:6px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:500 var(--s-sm)/1 var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap;transition:background .15s ease-out,border-color .15s ease-out}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.primary:hover{filter:brightness(.93)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--hover);color:var(--ink)}
+.btn[disabled]{opacity:.55;cursor:default}
+
+.pagehead{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.crumb{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:var(--s-xs)}
+.crumb a{text-decoration:none}.crumb a:hover{color:var(--ink)}
+.sub{color:var(--muted);max-width:66ch}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0;overflow:hidden}
+.panel>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.pad{padding:14px}
+.stack{display:flex;flex-direction:column;gap:14px}
+
+/* intro band with illustration */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:24px;align-items:center;padding:24px;margin-bottom:20px;border:1px solid var(--accent-line);border-radius:14px;
+  background-color:var(--accent-soft);
+  background-image:radial-gradient(color-mix(in srgb,var(--accent) 22%,transparent) 1.1px,transparent 1.5px);background-size:18px 18px}
+.hero .txt{display:flex;flex-direction:column;gap:14px}
+.steps3{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.steps3 li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.steps3 b{font-weight:600}
+.steps3 small{color:var(--muted);font-size:var(--s-xs);line-height:1.4}
+.steps3 .n{width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:inline-grid;place-items:center;font:600 12px/1 var(--sans);margin-bottom:4px}
+.hero svg{width:100%;height:auto;max-height:190px}
+.callout{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:12px;border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:10px;color:var(--ink)}
+.callout .ic{color:var(--accent-ink);margin-top:3px}
+.callout b{font-weight:600}
+
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.stat{display:flex;flex-direction:column;gap:2px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:150px}
+.stat b{font-size:var(--s-md);font-weight:600;font-variant-numeric:tabular-nums}
+.stat span{font-size:var(--s-xs);color:var(--muted)}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:12px}
+.search{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);flex:1 1 240px;max-width:380px}
+.search input{border:0;outline:0;background:transparent;color:var(--ink);font:400 var(--s-sm) var(--sans);width:100%;min-width:0}
+.search:focus-within{border-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{min-height:36px;padding:0 14px;border:0;background:transparent;color:var(--muted);font:500 var(--s-sm) var(--sans);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink)}
+#pal{display:flex;width:100%}
+#pal button{flex:1;padding:0 6px;min-height:32px;font-size:var(--s-xs)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{font-size:var(--s-xs);font-weight:600;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--code-bg)}
+td{padding:0 14px;height:46px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--hover)}
+td.task{max-width:300px;overflow:hidden;text-overflow:ellipsis}
+td.r,th.r{text-align:right}
+.idlink{font-family:var(--mono);font-size:var(--s-xs);color:var(--accent-ink);text-decoration:none;border-bottom:1px solid var(--accent-line)}
+.idlink:hover{border-bottom-color:var(--accent-ink)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:var(--muted)}
+.dot.fail{background:var(--bad)}.dot.pass{background:var(--ok)}
+.chip{display:inline-flex;align-items:center;min-height:24px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);font:500 var(--s-xs)/1.2 var(--sans);color:var(--muted);background:var(--surface);white-space:nowrap}
+.chip.fail{color:var(--bad-ink);background:var(--bad-soft);border-color:var(--bad-line)}
+.chip.pass{color:var(--ok);background:var(--ok-soft);border-color:transparent}
+.note{margin-top:12px;color:var(--muted);font-size:var(--s-xs)}
+
+/* run detail */
+.detail{display:grid;grid-template-columns:270px minmax(0,1fr) 340px;gap:14px;align-items:start}
+.tl{list-style:none;margin:0;padding:0}
+.step{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:4px 10px;align-items:center;width:100%;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;font:400 var(--s-sm)/1.3 var(--sans);cursor:pointer;transition:background .12s ease-out}
+.tl li:last-child .step{border-bottom:0}
+.step:hover{background:var(--hover)}
+.step[aria-current="step"]{background:var(--accent-soft)}
+.mk{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);justify-self:center}
+.step.err .mk{border-color:var(--bad)}
+.step.fail .mk{background:var(--bad);border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+.step .nm{font-family:var(--mono);font-size:var(--s-xs);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step .ms{font-size:var(--s-xs);color:var(--muted);font-variant-numeric:tabular-nums}
+.step .meta{grid-column:2/4;font-size:var(--s-xs);color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:var(--s-xs);padding:1px 8px;border-radius:999px;background:var(--code-bg);color:var(--muted);display:inline-flex;align-items:center;white-space:nowrap}
+.tag.fail{background:var(--bad-soft);color:var(--bad-ink)}
+.code{font:400 var(--s-xs)/1.65 var(--mono);background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}
+.code.err{background:var(--bad-soft);border-color:var(--bad-line)}
+.field{display:flex;flex-direction:column;gap:6px}
+.dx{display:flex;flex-direction:column;gap:18px;padding:14px}
+.dx p{max-width:62ch}
+.ev{display:flex;flex-direction:column;gap:8px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px;align-items:start}
+.checks .ic{margin-top:3px}
+.checks .hit .ic{color:var(--bad)}
+.checks .clear{color:var(--muted)}
+.checks small{display:block;font-size:var(--s-xs);color:var(--muted)}
+.hint{padding:10px 14px;font-size:var(--s-xs);color:var(--muted);border-top:1px solid var(--line);background:var(--code-bg)}
+
+/* replay */
+.replay{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:14px;align-items:start}
+textarea{width:100%;min-height:210px;resize:vertical;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:400 var(--s-xs)/1.65 var(--mono)}
+textarea:focus{outline:0;border-color:var(--accent)}
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.rl{list-style:none;margin:0;padding:0}
+.rs{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:2px 10px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:start}
+.rs:last-child{border-bottom:0}
+.rs .ic{margin-top:3px}
+.rs .sum{grid-column:2/4;font-size:var(--s-xs);color:var(--muted);overflow-wrap:anywhere}
+.rs.cached{color:var(--muted);background:var(--code-bg)}
+.st-ok{color:var(--ok)}.st-bad{color:var(--bad)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:sp .7s linear infinite;margin-top:3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{padding:20px 14px;color:var(--muted);max-width:44ch}
+.answer{padding:12px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.result{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+
+.diff{font:400 var(--s-xs)/1.65 var(--mono);border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.diff div{padding:3px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.diff .add{background:var(--ok-soft);color:var(--ok)}
+.diff .ctx{color:var(--muted)}
+
+@media (max-width:1100px){
+  .detail{grid-template-columns:270px minmax(0,1fr)}
+  .detail .dxwrap{grid-column:1/-1}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);gap:16px}
+  .side{position:static;flex-direction:row;align-items:center;flex-wrap:wrap;gap:12px 20px}
+  .side .nav{flex-direction:row;flex-wrap:wrap}
+  .side .foot{margin-left:auto;flex-direction:row;align-items:flex-end;flex-wrap:wrap}
+  .proj{display:none}
+  .palwrap{min-width:200px}
+  .replay{grid-template-columns:minmax(0,1fr)}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero svg{max-height:150px}
+}
+@media (max-width:700px){
+  .detail{grid-template-columns:minmax(0,1fr)}
+  .cmp{grid-template-columns:minmax(0,1fr)}
+  .steps3{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.spin{animation:none}}
+</style>
+
+<div class="bg" aria-hidden="true"><div class="dots"></div><div class="rings"></div><div class="rings b"></div></div>
+<div class="app">
+  <aside class="side">
+    <a class="brand" href="#runs"><b><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 6 3 12l8 6V6Z"/><path d="M21 6l-8 6 8 6V6Z"/></svg>Rewind</b><span>Find out why your AI agent slipped</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="#runs" id="nav-runs"></a>
+      <a href="#batch" id="nav-batch"></a>
+    </nav>
+    <div class="foot">
+      <div class="proj"><span>Project</span><b class="mono">demo-agents</b></div>
+      <div class="palwrap"><span>Colours</span>
+        <div class="seg" id="pal" role="group" aria-label="Colour palette"><button type="button" data-p="navy">Navy</button><button type="button" data-p="olive">Olive</button><button type="button" data-p="crimson">Crimson</button></div>
+      </div>
+      <button class="btn ghost" id="theme" type="button" aria-label="Switch between light and dark mode"></button>
+    </div>
+  </aside>
+  <main id="view" aria-live="polite"></main>
+</div>
+
+<script>
+(function(){
+var ICONS={
+ list:'<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+ layers:'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+ search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+ alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+ play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+ undo:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+ moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+ chev:'<path d="m9 18 6-6-6-6"/>',
+ info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'
+};
+function I(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n){return Number(n).toLocaleString('en-US');}
+function dur(ms){return ms>=1000?(ms/1000).toFixed(1)+'s':ms+'ms';}
+var $=function(s,r){return (r||document).querySelector(s);};
+
+/* plain-language names */
+var LABEL={ignored_error:'Ignored an error',infinite_loop:'Got stuck in a loop',goal_drift:'Wandered off task',bad_arguments:'Used wrong inputs'};
+var KIND={llm:'AI thinking',tool:'Tool',system:'System'};
+var KIND_SENT={llm:'The AI decided what to do next.',tool:'The agent used a tool and got a result back.',system:'Rewind stopped the run.'};
+var DTL={'Repeated identical call':'Same action repeated','Ignored tool error':'Error was ignored','Argument absent from context':'Made-up input value','Output schema mismatch':'Unexpected result format','Step or budget limit':'Ran out of steps'};
+function failChip(l){return '<span class="chip fail" title="Technical name: '+l+'">'+LABEL[l]+'</span>';}
+
+/* ---------- data ---------- */
+var RUNS=[
+ {id:'r-2041',agent:'sql-agent',task:'Revenue by region, Q3',ok:false,label:'ignored_error',steps:7,cost:0.041,dur:'14.2s',when:'Today 10:38'},
+ {id:'r-2040',agent:'research-agent',task:'Compare three EV charging standards',ok:true,label:'',steps:9,cost:0.052,dur:'18.9s',when:'Today 10:31'},
+ {id:'r-2038',agent:'trip-planner',task:'3-day Jaipur plan under ₹25,000',ok:false,label:'infinite_loop',steps:8,cost:0.058,dur:'21.6s',when:'Today 10:12'},
+ {id:'r-2036',agent:'sql-agent',task:'Orders per day, last 14 days',ok:true,label:'',steps:5,cost:0.019,dur:'6.4s',when:'Today 09:47'},
+ {id:'r-2035',agent:'research-agent',task:'Summarise recent solid-state battery work',ok:false,label:'goal_drift',steps:7,cost:0.047,dur:'17.0s',when:'Today 09:40'},
+ {id:'r-2033',agent:'sql-agent',task:'Average basket size by city',ok:true,label:'',steps:6,cost:0.024,dur:'7.8s',when:'Today 09:22'},
+ {id:'r-2029',agent:'sql-agent',task:'Top 10 customers by refunds',ok:false,label:'ignored_error',steps:6,cost:0.033,dur:'11.0s',when:'Yesterday 18:05'},
+ {id:'r-2024',agent:'sql-agent',task:'Monthly active users, last 6 months',ok:false,label:'ignored_error',steps:8,cost:0.044,dur:'15.3s',when:'Yesterday 16:42'},
+ {id:'r-2019',agent:'support-agent',task:'Refund status for order 88213',ok:false,label:'bad_arguments',steps:5,cost:0.021,dur:'8.1s',when:'Yesterday 15:10'},
+ {id:'r-2017',agent:'trip-planner',task:'Weekend in Pondicherry, 2 adults',ok:false,label:'infinite_loop',steps:9,cost:0.061,dur:'23.4s',when:'Yesterday 13:56'},
+ {id:'r-2012',agent:'sql-agent',task:'Inventory below reorder level',ok:false,label:'ignored_error',steps:7,cost:0.038,dur:'12.6s',when:'Yesterday 11:20'},
+ {id:'r-2007',agent:'sql-agent',task:'Churn by plan tier',ok:false,label:'ignored_error',steps:10,cost:0.049,dur:'16.8s',when:'Nov 4, 17:33'},
+ {id:'r-2003',agent:'sql-agent',task:'Delivery delays by warehouse',ok:false,label:'ignored_error',steps:6,cost:0.031,dur:'10.2s',when:'Nov 4, 14:08'}
+];
+var DT=['Repeated identical call','Ignored tool error','Argument absent from context','Output schema mismatch','Step or budget limit'];
+function S(kind,name,ms,tok,input,output,status){return {kind:kind,name:name,ms:ms,tok:tok,input:input,output:output,status:status||'ok'};}
+
+var DETAIL={
+'r-2041':{
+ agent:'sql-agent',task:'Revenue by region, Q3',started:'Today 10:38',cost:'$0.041',dur:'14.2s',failStep:5,label:'ignored_error',
+ prompt:'You are a data analyst agent. Answer questions by querying the company database with the tools provided.\nUse only tables and columns returned by describe_table.\nKeep answers short.',
+ fix:'If a tool returns an error, never treat it as an empty result. Read the error, correct the input, and retry once. If it still fails, tell the user the query failed.',
+ steps:[
+  S('llm','plan',820,412,'Task: Revenue by region, Q3\nTools: list_tables, describe_table, run_sql, format_report','1. Find the orders table\n2. Check its columns\n3. Aggregate amount by region for Q3\n4. Format the result'),
+  S('tool','list_tables',96,0,'{}','["customers", "orders", "order_items", "refunds", "regions"]'),
+  S('tool','describe_table',112,0,'{"table": "orders"}','{"columns": ["id", "customer_id", "region_id", "amount", "status", "order_date"]}'),
+  S('tool','run_sql',143,0,'{"query": "SELECT region_id, SUM(amount) FROM orders WHERE quarter = \'Q3\' GROUP BY region_id"}','ERROR: column "quarter" does not exist\nHINT: Perhaps you meant "order_date".','error'),
+  S('llm','respond',1140,530,'Tool result (run_sql):\nERROR: column "quarter" does not exist\nHINT: Perhaps you meant "order_date".','The query returned no rows, so revenue for Q3 is 0 in every region.'),
+  S('tool','format_report',88,0,'{"rows": [], "title": "Q3 revenue by region"}','| Region | Revenue |\n|---|---|\n| (no data) | 0 |'),
+  S('llm','final_answer',760,301,'Report: Q3 revenue by region, no data','Q3 revenue was ₹0 in all regions.')
+ ],
+ diag:{
+  reason:'A database search failed at step 4, and the error message even suggested the fix. At step 5 the agent read that failure as "no data" and carried on, so the final answer was ₹0 for every region.',
+  evidence:[
+   {from:'What step 4 returned',text:'ERROR: column "quarter" does not exist\nHINT: Perhaps you meant "order_date".'},
+   {from:'What the agent said at step 5',text:'The query returned no rows, so revenue for Q3 is 0 in every region.'}
+  ],
+  fired:{'Ignored tool error':'Step 4 returned an error, but step 5 answered as if nothing was wrong.','Argument absent from context':'The column "quarter" never appeared in the table description at step 3.'},
+  judge:'Agrees with step 5. The error message named the right column (order_date), but the agent did not use it.'
+ },
+ replay:{
+  after:[
+   {i:5,name:'respond',kind:'llm',sum:'Reads the error and the order_date hint, then tries again with a date filter.'},
+   {i:6,name:'run_sql',kind:'tool',sum:'Filters by order date from Jul 1 to Sep 30 and gets 4 rows.'},
+   {i:7,name:'format_report',kind:'tool',sum:'Builds a table with 4 regions.'},
+   {i:8,name:'final_answer',kind:'llm',sum:'Reports revenue for all four regions.'}
+  ],
+  answerBefore:'Q3 revenue was ₹0 in all regions.',
+  answerAfter:'Q3 (Jul to Sep) revenue by region: South ₹4.8 Cr, West ₹3.9 Cr, North ₹3.1 Cr, East ₹2.2 Cr.',
+  stats:{fullTok:3540,replayTok:1420,fullMs:14200,replayMs:5100}
+ }
+},
+'r-2038':{
+ agent:'trip-planner',task:'3-day Jaipur plan under ₹25,000',started:'Today 10:12',cost:'$0.058',dur:'21.6s',failStep:3,label:'infinite_loop',
+ prompt:'You are a travel planner. Build itineraries using the search tools.\nRespect the user\'s budget. Keep each day to at most four stops.',
+ fix:'If a search returns no results, change one parameter (price, dates or area) before searching again. Never repeat a search with identical arguments. After two empty searches, ask the user which constraint to relax.',
+ steps:[
+  S('llm','plan',910,480,'Task: 3-day Jaipur plan under ₹25,000\nTools: search_hotels, search_sights, build_plan','1. Find hotels\n2. Find sights\n3. Build the day plan under budget'),
+  S('tool','search_hotels',410,0,'{"city": "Jaipur", "max_price": 4000, "nights": 3}','{"results": [], "note": "No hotels under ₹4,000/night with a 3-night minimum"}'),
+  S('llm','decide',640,220,'Tool result (search_hotels): 0 results','No results. Retrying the hotel search.'),
+  S('tool','search_hotels',402,0,'{"city": "Jaipur", "max_price": 4000, "nights": 3}','{"results": [], "note": "No hotels under ₹4,000/night with a 3-night minimum"}'),
+  S('llm','decide',610,238,'Tool result (search_hotels): 0 results','No results. Retrying the hotel search.'),
+  S('tool','search_hotels',417,0,'{"city": "Jaipur", "max_price": 4000, "nights": 3}','{"results": [], "note": "No hotels under ₹4,000/night with a 3-night minimum"}'),
+  S('llm','decide',655,251,'Tool result (search_hotels): 0 results','No results. Retrying the hotel search.'),
+  S('system','max_steps',0,0,'step_limit = 8','Run stopped: step limit (8) reached. No itinerary produced.','error')
+ ],
+ diag:{
+  reason:'The hotel search found nothing and said why: the price limit was too low. At step 3 the agent chose to search the exact same way again, and kept repeating until it ran out of steps.',
+  evidence:[
+   {from:'What step 2 returned',text:'{"results": [], "note": "No hotels under ₹4,000/night with a 3-night minimum"}'},
+   {from:'What steps 4 and 6 asked for',text:'{"city": "Jaipur", "max_price": 4000, "nights": 3}  (identical to step 2)'}
+  ],
+  fired:{'Repeated identical call':'The hotel search ran with identical settings at steps 2, 4 and 6.','Step or budget limit':'The run was cut off at its 8-step limit.'},
+  judge:'Agrees with step 3. It is the first moment the agent could have changed its search, and the result already pointed to the price limit.'
+ },
+ replay:{
+  after:[
+   {i:3,name:'decide',kind:'llm',sum:'Sees the empty result and raises the price limit to ₹5,500 for one retry.'},
+   {i:4,name:'search_hotels',kind:'tool',sum:'Searches again with the new limit and gets 3 hotels.'},
+   {i:5,name:'build_plan',kind:'tool',sum:'Builds 3 days with 4 stops each, total ₹23,400.'},
+   {i:6,name:'final_answer',kind:'llm',sum:'Shares the plan and explains that the hotel budget was raised.'}
+  ],
+  answerBefore:'No itinerary produced.',
+  answerAfter:'3-day Jaipur plan, ₹23,400 total. Hotel budget raised to ₹5,500/night because nothing was available at ₹4,000.',
+  stats:{fullTok:4800,replayTok:1900,fullMs:21600,replayMs:6400}
+ }
+},
+'r-2035':{
+ agent:'research-agent',task:'Summarise recent solid-state battery work',started:'Today 09:40',cost:'$0.047',dur:'17.0s',failStep:4,label:'goal_drift',
+ prompt:'You are a research assistant. Search, read sources, and write short summaries.\nCite the sources you used.',
+ fix:'Every search query must serve the user\'s task. If a source raises a related topic, mention it in one line at most. Do not search for it.',
+ steps:[
+  S('llm','plan',780,390,'Task: Summarise recent work on solid-state batteries','1. Search recent progress\n2. Read two sources\n3. Write a 200-word summary'),
+  S('tool','web_search',1210,0,'{"q": "solid-state battery progress 2026"}','5 results. Top: "Sulfide electrolytes close the gap on lithium-ion cost" (review, Oct 2026)'),
+  S('tool','fetch_page',860,0,'{"url": "https://example.org/sulfide-electrolytes-review"}','...sulfide electrolytes now exceed 10 mS/cm at room temperature... pilot lines depend on lithium supply, with new mining rules in Chile affecting quotas...'),
+  S('llm','notes',980,402,'Page excerpt (fetch_page)','Notes: sulfide electrolytes exceed 10 mS/cm at room temperature. The article also raises lithium supply risk. Following that thread.'),
+  S('tool','web_search',1180,0,'{"q": "lithium mining regulations Chile 2026"}','5 results. Top: "Chile revises lithium quota framework"'),
+  S('tool','fetch_page',940,0,'{"url": "https://example.org/chile-lithium-quotas"}','...the revised framework sets annual quotas by producer...'),
+  S('llm','final_answer',1420,610,'Notes and two fetched pages','Summary: The debate around solid-state batteries now centres on lithium supply, with new Chilean mining rules shaping quotas and prices.')
+ ],
+ diag:{
+  reason:'The final summary answers a different question from the one asked. At step 4 the agent followed a side remark about lithium supply, and never came back to the battery research.',
+  evidence:[
+   {from:'What the agent said at step 4',text:'The article also raises lithium supply risk. Following that thread.'},
+   {from:'What the agent said at step 7',text:'The debate around solid-state batteries now centres on lithium supply...'}
+  ],
+  fired:{},
+  judge:'No automatic check caught this one, so the AI reviewer flagged it: the search at step 5 no longer matched the question.'
+ },
+ replay:{
+  after:[
+   {i:4,name:'notes',kind:'llm',sum:'Records the conductivity result, mentions lithium supply in one line, and moves on.'},
+   {i:5,name:'web_search',kind:'tool',sum:'Searches for solid-state battery electrolyte conductivity.'},
+   {i:6,name:'fetch_page',kind:'tool',sum:'Reads a second source about electrolyte results.'},
+   {i:7,name:'final_answer',kind:'llm',sum:'Writes a summary that stays on battery technology and cites both sources.'}
+  ],
+  answerBefore:'The debate around solid-state batteries now centres on lithium supply...',
+  answerAfter:'Summary: sulfide electrolytes now exceed 10 mS/cm at room temperature and pilot lines are scaling. Lithium supply is noted as a risk in one line.',
+  stats:{fullTok:3900,replayTok:1650,fullMs:17000,replayMs:7200}
+ }
+}
+};
+
+var BATCH=[
+ {id:'r-2041',task:'Revenue by region, Q3',guard:false,before:'fail',after:'pass',delta:-2120,note:'Retried with the right date column'},
+ {id:'r-2029',task:'Top 10 customers by refunds',guard:false,before:'fail',after:'pass',delta:-1760,note:'Corrected the join column'},
+ {id:'r-2024',task:'Monthly active users, last 6 months',guard:false,before:'fail',after:'pass',delta:-2430,note:'Retried with a date function'},
+ {id:'r-2012',task:'Inventory below reorder level',guard:false,before:'fail',after:'pass',delta:-1540,note:'Fixed the table alias'},
+ {id:'r-2007',task:'Churn by plan tier',guard:false,before:'fail',after:'pass',delta:-2910,note:'Retried with the right column name'},
+ {id:'r-2003',task:'Delivery delays by warehouse',guard:false,before:'fail',after:'fail',delta:-1380,note:'The table delivery_events does not exist. The agent reported the error but gave no answer.'},
+ {id:'r-2040',task:'Compare three EV charging standards',guard:true,before:'pass',after:'pass',delta:0,note:'No change'},
+ {id:'r-2036',task:'Orders per day, last 14 days',guard:true,before:'pass',after:'pass',delta:120,note:'Same answer as before'},
+ {id:'r-2033',task:'Average basket size by city',guard:true,before:'pass',after:'fail',delta:3080,note:'Retried after a harmless warning and ran out of steps'}
+];
+
+/* ---------- shell ---------- */
+$('#nav-runs').innerHTML=I('list')+'All runs';
+$('#nav-batch').innerHTML=I('layers')+'Test a fix on many runs';
+function setThemeBtn(){
+  var el=document.documentElement,t=el.getAttribute('data-theme');
+  var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+  $('#theme').innerHTML=I(dark?'sun':'moon')+(dark?'Light mode':'Dark mode');
+}
+$('#theme').addEventListener('click',function(){
+  var el=document.documentElement,t=el.getAttribute('data-theme');
+  var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+  el.setAttribute('data-theme',dark?'light':'dark');setThemeBtn();
+});
+(function(){
+  var el=document.documentElement;
+  if(!el.getAttribute('data-theme'))el.setAttribute('data-theme',window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  function setPal(p){
+    el.setAttribute('data-palette',p);
+    document.querySelectorAll('#pal button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-p')===p));});
+  }
+  document.querySelectorAll('#pal button').forEach(function(b){b.addEventListener('click',function(){setPal(b.getAttribute('data-p'));});});
+  setPal('navy');
+})();
+setThemeBtn();
+
+var view=$('#view');
+var token=0;
+var st={filter:'all',q:'',sel:null};
+
+/* ---------- all runs ---------- */
+var ILLUSTRATION='<svg viewBox="0 0 340 180" role="img" aria-label="A row of steps where the fifth one went wrong, with an arrow looping back to it">'+
+ '<line x1="24" y1="96" x2="316" y2="96" style="stroke:var(--line);stroke-width:3;stroke-linecap:round"/>'+
+ [0,1,2,3,4,5,6].map(function(k){var x=24+k*48.67,bad=k===4;return '<circle cx="'+x+'" cy="96" r="'+(bad?11:8)+'" style="fill:'+(bad?'var(--bad)':'var(--surface)')+';stroke:'+(bad?'var(--bad)':'var(--muted)')+';stroke-width:2.5"/>'+(bad?'<path d="M'+(x-4)+' '+(96-4)+'l8 8M'+(x+4)+' '+(96-4)+'l-8 8" style="stroke:#fff;stroke-width:2;stroke-linecap:round"/>':'');}).join('')+
+ '<path d="M316 108 C316 160 218 160 218.7 112" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:5 5;stroke-linecap:round"/>'+
+ '<path d="M212 120 l6.7 -9 l7 9" style="fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"/>'+
+ '<text x="268" y="152" text-anchor="middle" style="fill:var(--accent-ink);font:600 13px var(--sans)">Rewind to here</text>'+
+ '<text x="218.7" y="62" text-anchor="middle" style="fill:var(--bad-ink);font:600 13px var(--sans)">The mistake</text>'+
+ '<text x="24" y="62" style="fill:var(--muted);font:400 13px var(--sans)">Each dot is one step</text></svg>';
+
+function viewRuns(){
+  var failed=RUNS.filter(function(r){return !r.ok;}).length;
+  var spend=RUNS.reduce(function(a,r){return a+r.cost;},0);
+  var counts={};RUNS.forEach(function(r){if(r.label)counts[r.label]=(counts[r.label]||0)+1;});
+  var top=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];})[0];
+  var fl={all:'All',failed:'Went wrong',passed:'Worked'};
+  view.innerHTML=
+   '<section class="hero"><div class="txt"><h1>Why did my AI agent get it wrong?</h1>'+
+   '<p class="sub">Rewind saves everything your agent does, points to the exact step where it went off track, and lets you test a fix without starting over.</p>'+
+   '<ol class="steps3"><li><span class="n">1</span><b>Record</b><small>Every step your agent takes is saved automatically.</small></li><li><span class="n">2</span><b>Find the mistake</b><small>Rewind marks the step where things went wrong and explains why.</small></li><li><span class="n">3</span><b>Try a fix</b><small>Change the instructions and replay from that step only.</small></li></ol></div>'+
+   '<div>'+ILLUSTRATION+'</div></section>'+
+   '<div class="stats">'+
+     '<div class="stat"><b>'+RUNS.length+'</b><span>Total runs</span></div>'+
+     '<div class="stat"><b>'+failed+'</b><span>Went wrong</span></div>'+
+     '<div class="stat"><b>'+LABEL[top]+'</b><span>Most common mistake ('+counts[top]+' runs)</span></div>'+
+     '<div class="stat"><b>$'+spend.toFixed(2)+'</b><span>Total spend</span></div>'+
+   '</div>'+
+   '<h2 style="margin-bottom:10px">Your agent runs</h2>'+
+   '<div class="toolbar">'+
+     '<label class="search">'+I('search')+'<input id="q" type="search" placeholder="Search by task, agent or run number" value="'+esc(st.q)+'" autocomplete="off"></label>'+
+     '<div class="seg" role="group" aria-label="Filter runs">'+
+       ['all','failed','passed'].map(function(f){return '<button type="button" data-f="'+f+'" aria-pressed="'+(st.filter===f)+'">'+fl[f]+'</button>';}).join('')+
+     '</div>'+
+   '</div>'+
+   '<div class="panel"><div class="tablewrap"><table>'+
+     '<thead><tr><th>Run</th><th>Agent</th><th>What it was asked</th><th>Result</th><th>What went wrong</th><th class="r">Steps</th><th class="r">Cost</th><th class="r">Time taken</th><th>When</th></tr></thead>'+
+     '<tbody id="rows"></tbody></table></div></div>'+
+   '<p class="note">This is sample data. Open <a class="idlink" href="#run-r-2041">r-2041</a>, <a class="idlink" href="#run-r-2038">r-2038</a> or <a class="idlink" href="#run-r-2035">r-2035</a> to see the full story and try a fix.</p>';
+  function rows(){
+    var q=st.q.trim().toLowerCase();
+    var list=RUNS.filter(function(r){
+      if(st.filter==='failed'&&r.ok)return false;
+      if(st.filter==='passed'&&!r.ok)return false;
+      return !q||(r.id+' '+r.agent+' '+r.task+' '+(r.label?LABEL[r.label]:'')).toLowerCase().indexOf(q)>-1;
+    });
+    $('#rows').innerHTML=list.length?list.map(function(r){
+      var link=DETAIL[r.id]?'<a class="idlink" href="#run-'+r.id+'">'+r.id+'</a>':'<span class="mono muted" style="font-size:12px" title="Full trace is not loaded in this demo">'+r.id+'</span>';
+      return '<tr><td>'+link+'</td><td class="mono" style="font-size:12px">'+r.agent+'</td><td class="task">'+esc(r.task)+'</td>'+
+        '<td><span class="dot '+(r.ok?'pass':'fail')+'"></span>'+(r.ok?'Worked':'Went wrong')+'</td>'+
+        '<td>'+(r.label?failChip(r.label):'<span class="muted">Nothing</span>')+'</td>'+
+        '<td class="r">'+r.steps+'</td><td class="r">$'+r.cost.toFixed(3)+'</td><td class="r">'+r.dur+'</td><td class="muted">'+r.when+'</td></tr>';
+    }).join(''):'<tr><td colspan="9" style="height:96px;white-space:normal;color:var(--muted)">No runs match "'+esc(st.q)+'". Clear the search box or choose All.</td></tr>';
+  }
+  rows();
+  $('#q').addEventListener('input',function(e){st.q=e.target.value;rows();});
+  view.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){
+    st.filter=b.getAttribute('data-f');
+    view.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});rows();
+  });});
+}
+
+/* ---------- one run ---------- */
+var keyHandler=null;
+function viewRun(id){
+  var R=DETAIL[id],n=R.steps.length;
+  st.sel=R.failStep;
+  view.innerHTML=
+   '<div class="pagehead">'+
+     '<div class="crumb"><a href="#runs">All runs</a>'+I('chev')+'<span class="mono">'+id+'</span></div>'+
+     '<div class="row spread"><h1>'+esc(R.task)+'</h1>'+failChip(R.label)+'</div>'+
+     '<div class="row muted" style="font-size:13px"><span>Agent: <span class="mono">'+R.agent+'</span></span><span>'+n+' steps</span><span>'+R.cost+' spent</span><span>'+R.dur+' total</span><span>Started '+R.started+'</span></div>'+
+   '</div>'+
+   '<div class="callout">'+I('info')+'<div><b>Start here.</b> Your agent went wrong at step '+R.failStep+', marked in red on the left. Read the explanation on the right, then press <b>Try a fix</b> to test a change.</div></div>'+
+   '<div class="detail">'+
+     '<section class="panel" aria-label="What the agent did"><header><h3>What the agent did</h3><span class="muted" style="font-size:12px">Use ↑ ↓ keys</span></header><ol class="tl" id="tl"></ol>'+
+     '<div class="hint">Tokens are the small pieces of text an AI reads and writes. More tokens means a higher bill.</div></section>'+
+     '<section class="panel" aria-label="Step detail" id="io"></section>'+
+     '<aside class="panel dxwrap" aria-label="What went wrong" id="dx"></aside>'+
+   '</div>';
+  function drawTl(){
+    $('#tl').innerHTML=R.steps.map(function(s,k){
+      var i=k+1,cls='step'+(i===R.failStep?' fail':'')+(s.status==='error'?' err':'');
+      return '<li><button type="button" class="'+cls+'" data-i="'+i+'"'+(i===st.sel?' aria-current="step"':'')+'>'+
+        '<span class="mk"></span><span class="nm">'+String(i).padStart(2,'0')+'  '+s.name+'</span><span class="ms">'+(s.ms?dur(s.ms):'')+'</span>'+
+        '<span class="meta"><span class="tag">'+KIND[s.kind]+'</span>'+(s.tok?'<span class="num">'+fmt(s.tok)+' tokens</span>':'')+(i===R.failStep?'<span class="tag fail">Mistake is here</span>':'')+(s.status==='error'&&i!==R.failStep?'<span class="tag fail">Error</span>':'')+'</span></button></li>';
+    }).join('');
+    $('#tl').querySelectorAll('.step').forEach(function(b){b.addEventListener('click',function(){pick(+b.getAttribute('data-i'));});});
+  }
+  function drawIo(){
+    var s=R.steps[st.sel-1];
+    $('#io').innerHTML=
+     '<header><div class="stack" style="gap:2px"><div class="row" style="gap:10px"><h2>Step '+st.sel+'</h2><span class="mono muted" style="font-size:12px">'+s.name+'</span></div><p class="muted" style="font-size:13px">'+KIND_SENT[s.kind]+'</p></div>'+
+     '<div class="row muted" style="font-size:12px"><span class="tag">'+KIND[s.kind]+'</span>'+(s.ms?'<span class="num">'+dur(s.ms)+'</span>':'')+(s.tok?'<span class="num">'+fmt(s.tok)+' tokens</span>':'')+'</div></header>'+
+     '<div class="pad stack">'+
+       '<div class="field"><h3>What went in</h3><pre class="code">'+esc(s.input)+'</pre></div>'+
+       '<div class="field"><h3>'+(s.status==='error'?'What came out (an error)':'What came out')+'</h3><pre class="code'+(s.status==='error'?' err':'')+'">'+esc(s.output)+'</pre></div>'+
+     '</div>';
+  }
+  function drawDx(){
+    var D=R.diag,rows=DT.map(function(d){
+      return D.fired[d]?'<li class="hit">'+I('alert')+'<div>'+DTL[d]+'<small>'+esc(D.fired[d])+'</small></div></li>':'<li class="clear">'+I('check')+'<div>'+DTL[d]+'</div></li>';
+    }).join('');
+    $('#dx').innerHTML=
+     '<header><h3>What went wrong</h3>'+failChip(R.label)+'</header>'+
+     '<div class="dx">'+
+       '<div class="stack" style="gap:8px"><h2>The mistake happened at step '+R.failStep+' of '+n+'</h2><p>'+esc(D.reason)+'</p></div>'+
+       '<div class="row"><a class="btn primary" href="#replay-'+id+'">'+I('undo')+'Try a fix from step '+R.failStep+'</a>'+(st.sel!==R.failStep?'<button type="button" class="btn" id="jump">Show step '+R.failStep+'</button>':'')+'</div>'+
+       '<div class="ev"><h3>Proof from the run</h3>'+D.evidence.map(function(e){return '<div class="field" style="gap:4px"><span class="muted" style="font-size:13px">'+e.from+'</span><pre class="code" style="max-height:120px">'+esc(e.text)+'</pre></div>';}).join('')+'</div>'+
+       '<div class="ev"><h3>Automatic checks</h3><ul class="checks">'+rows+'</ul></div>'+
+       '<div class="ev"><h3>AI reviewer</h3><p>'+esc(D.judge)+'</p></div>'+
+     '</div>'+
+     '<div class="hint">Trying a fix reuses steps 1 to '+(R.failStep-1)+' from this run, so you only pay for what changes. Nothing touches your real tools.</div>';
+    var j=$('#jump');if(j)j.addEventListener('click',function(){pick(R.failStep);});
+  }
+  function pick(i){
+    var hadFocus=document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('step');
+    st.sel=Math.max(1,Math.min(n,i));drawTl();drawIo();drawDx();
+    if(hadFocus){var c=$('#tl [aria-current="step"]');if(c)c.focus({preventScroll:true});}
+  }
+  drawTl();drawIo();drawDx();
+  keyHandler=function(e){
+    if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+    if(e.key==='ArrowDown'){e.preventDefault();pick(st.sel+1);}
+    if(e.key==='ArrowUp'){e.preventDefault();pick(st.sel-1);}
+  };
+}
+
+/* ---------- try a fix ---------- */
+function stepIcon(status){return status==='ok'?'<span class="st-ok">'+I('check')+'</span>':status==='error'?'<span class="st-bad">'+I('x')+'</span>':'<span class="st-bad">'+I('alert')+'</span>';}
+function firstLine(s){var t=String(s).split('\n')[0];return t.length>96?t.slice(0,93)+'...':t;}
+function viewReplay(id){
+  var R=DETAIL[id],f=R.failStep,P=R.replay,S0=P.stats;
+  var before=R.steps.slice(f-1);
+  view.innerHTML=
+   '<div class="pagehead">'+
+     '<div class="crumb"><a href="#runs">All runs</a>'+I('chev')+'<a class="mono" href="#run-'+id+'">'+id+'</a>'+I('chev')+'<span>Try a fix</span></div>'+
+     '<h1>Try a fix from step '+f+'</h1>'+
+     '<p class="sub">Change the instructions you give your agent, then run it again from the mistake. Earlier steps are reused and tools are simulated, so it is fast, cheap and safe.</p>'+
+   '</div>'+
+   '<div class="replay">'+
+     '<section class="panel" aria-label="Agent instructions">'+
+       '<header><h3>1. Agent instructions</h3><button type="button" class="btn ghost" id="reset">Undo my edits</button></header>'+
+       '<div class="pad stack">'+
+         '<div class="field"><label for="prompt" class="muted" style="font-size:13px">We added a suggested rule at the end. Keep it or change it.</label>'+
+         '<textarea id="prompt" spellcheck="false"></textarea></div>'+
+         '<div><h3 style="margin-bottom:8px">2. Run it again</h3><button type="button" class="btn primary" id="go">'+I('play')+'Run again from step '+f+'</button></div>'+
+       '</div>'+
+     '</section>'+
+     '<div>'+
+       '<div class="result" id="res"></div>'+
+       '<div class="cmp">'+
+         '<section class="panel" aria-label="Original run"><header><h3>Original run</h3><span class="chip fail">Went wrong</span></header><ul class="rl" id="bl"></ul><div class="answer"><span class="muted" style="font-size:13px">Agent\'s final answer</span><p>'+esc(P.answerBefore)+'</p></div></section>'+
+         '<section class="panel" aria-label="With your fix"><header><h3>With your fix</h3><span class="chip" id="afterchip">Not run yet</span></header><ul class="rl" id="al"></ul><div class="answer" id="aa" hidden></div></section>'+
+       '</div>'+
+     '</div>'+
+   '</div>';
+  var ta=$('#prompt');ta.value=R.prompt+'\n'+R.fix;
+  $('#reset').addEventListener('click',function(){ta.value=R.prompt;});
+  function drawBefore(){
+    $('#bl').innerHTML=before.map(function(s,k){
+      var i=f+k,status=i===f?'fail':(s.status==='error'?'error':'ok');
+      return '<li class="rs">'+stepIcon(status)+'<span class="mono" style="font-size:12px">'+i+'  '+s.name+'</span><span class="tag">'+KIND[s.kind]+'</span><span class="sum">'+esc(firstLine(s.output))+'</span></li>';
+    }).join('');
+  }
+  function drawIdle(){
+    $('#res').innerHTML='<div class="stat"><b class="st-bad">Went wrong</b><span>Original run</span></div><div class="stat"><b>'+fmt(S0.fullTok)+' tokens</b><span>Starting over would use this much</span></div><div class="stat"><b>'+dur(S0.fullMs)+'</b><span>Starting over would take this long</span></div>';
+    $('#al').innerHTML='<li class="rs cached"><span>'+I('check')+'</span><span>Steps 1 to '+(f-1)+'</span><span class="tag">reused</span></li><li class="empty">Nothing has run yet. Press "Run again from step '+f+'" to see what changes.</li>';
+    $('#aa').hidden=true;$('#afterchip').className='chip';$('#afterchip').textContent='Not run yet';
+  }
+  drawBefore();drawIdle();
+  $('#go').addEventListener('click',async function(){
+    var my=++token,fast=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var wait=function(ms){return new Promise(function(r){setTimeout(r,fast?0:ms);});};
+    var btn=$('#go');btn.disabled=true;
+    var changed=ta.value.trim()!==R.prompt.trim();
+    $('#afterchip').className='chip';$('#afterchip').textContent='Running';
+    $('#aa').hidden=true;
+    var al=$('#al');
+    al.innerHTML='<li class="rs cached"><span>'+I('check')+'</span><span>Steps 1 to '+(f-1)+'</span><span class="tag">reused</span></li>';
+    var steps=changed?P.after:before.map(function(s,k){return {i:f+k,name:s.name,kind:s.kind,sum:firstLine(s.output),status:k===0?'fail':(s.status==='error'?'error':'ok')};});
+    for(var k=0;k<steps.length;k++){
+      var s=steps[k],li=document.createElement('li');li.className='rs';
+      var tg=s.kind==='llm'?'re-run':'simulated';
+      li.innerHTML='<span class="spin"></span><span class="mono" style="font-size:12px">'+s.i+'  '+s.name+'</span><span class="tag">'+tg+'</span>';
+      al.appendChild(li);
+      await wait(520);if(my!==token)return;
+      var status=changed?'ok':s.status;
+      li.innerHTML=stepIcon(status)+'<span class="mono" style="font-size:12px">'+s.i+'  '+s.name+'</span><span class="tag">'+tg+'</span><span class="sum">'+esc(s.sum)+'</span>';
+    }
+    if(my!==token)return;
+    var aa=$('#aa');aa.hidden=false;
+    if(changed){
+      var saved=S0.fullTok-S0.replayTok,pct=Math.round(saved/S0.fullTok*100),ts=S0.fullMs-S0.replayMs;
+      $('#afterchip').className='chip pass';$('#afterchip').textContent='Worked';
+      aa.innerHTML='<span class="muted" style="font-size:13px">Agent\'s final answer (with simulated tools)</span><p>'+esc(P.answerAfter)+'</p>';
+      $('#res').innerHTML='<div class="stat"><b class="st-ok">Worked</b><span>Your fix solved it</span></div>'+
+        '<div class="stat"><b>'+fmt(saved)+' tokens ('+pct+'%)</b><span>Saved compared with starting over</span></div>'+
+        '<div class="stat"><b>'+dur(ts)+' faster</b><span>'+dur(S0.replayMs)+' instead of '+dur(S0.fullMs)+'</span></div>';
+    }else{
+      $('#afterchip').className='chip fail';$('#afterchip').textContent='Went wrong';
+      aa.innerHTML='<span class="muted" style="font-size:13px">Agent\'s final answer</span><p>'+esc(P.answerBefore)+'</p>';
+      $('#res').innerHTML='<div class="stat"><b class="st-bad">Still went wrong</b><span>Same mistake at step '+f+'</span></div><div class="stat"><b>No changes yet</b><span>Add or edit a rule, then run again</span></div>';
+    }
+    btn.disabled=false;
+  });
+}
+
+/* ---------- test a fix on many runs ---------- */
+function viewBatch(){
+  function rowHtml(r,state){
+    var pending=state==='pending';
+    var res=pending?'<span class="muted">Running</span>':'<span class="chip '+(r.after==='pass'?'pass':'fail')+'">'+(r.after==='pass'?'Worked':'Failed')+'</span>';
+    var tag='<span class="chip '+(r.before==='fail'?'fail':'pass')+'">'+(r.before==='fail'?'Failed':'Worked')+'</span>';
+    var delta=pending?'':(r.delta===0?'0':(r.delta>0?'+':'−')+fmt(Math.abs(r.delta)));
+    var verdict=pending?'':(r.before==='fail'&&r.after==='pass'?'<span class="st-ok">Fixed</span>':r.before==='pass'&&r.after==='fail'?'<span class="st-bad">Now broken</span>':'<span class="muted">No change</span>');
+    return '<tr><td><span class="mono" style="font-size:12px">'+r.id+'</span></td><td class="task">'+esc(r.task)+'</td><td>'+(r.guard?'<span class="muted">Safety check</span>':'Failed before')+'</td><td>'+tag+'</td><td>'+res+'</td><td>'+verdict+'</td><td class="r">'+delta+'</td><td class="muted" style="white-space:normal;min-width:240px">'+(pending?'':esc(r.note))+'</td></tr>';
+  }
+  view.innerHTML=
+   '<div class="pagehead"><div class="crumb"><span>Test a fix on many runs</span></div><h1>Test a fix on many runs</h1>'+
+   '<p class="sub">See whether one change to your agent\'s instructions fixes several failed runs at once, and check that it does not break runs that already worked.</p></div>'+
+   '<div class="stack">'+
+   '<section class="panel" aria-label="The change"><header><h3>The change we are testing</h3><button type="button" class="btn primary" id="rerun">'+I('play')+'Run the test again</button></header>'+
+   '<div class="pad stack"><div class="diff" aria-label="Instruction change"><div class="ctx">  You are a data analyst agent. Answer questions by querying the company database.</div><div class="ctx">  Use only tables and columns returned by describe_table.</div><div class="add">+ If a tool returns an error, never treat it as an empty result. Read the error, correct the input, and retry once. If it still fails, tell the user the query failed.</div></div>'+
+   '<p class="muted" style="font-size:13px">Tested on 6 failed runs where the agent ignored an error, plus 3 runs that already worked as a safety check. The green line is the rule we added.</p></div></section>'+
+   '<div class="result" id="sum"></div>'+
+   '<div class="panel"><div class="tablewrap"><table><thead><tr><th>Run</th><th>Question</th><th>Group</th><th>Before</th><th>After</th><th>Outcome</th><th class="r">Tokens vs starting over</th><th>What happened</th></tr></thead><tbody id="brows"></tbody></table></div></div>'+
+   '</div>';
+  function summary(done){
+    var fixed=BATCH.filter(function(r){return r.before==='fail'&&r.after==='pass';}).length;
+    var tf=BATCH.filter(function(r){return r.before==='fail';}).length;
+    var reg=BATCH.filter(function(r){return r.before==='pass'&&r.after==='fail';}).length;
+    var tg=BATCH.filter(function(r){return r.guard;}).length;
+    $('#sum').innerHTML=done?
+     '<div class="stat"><b class="st-ok">Fixed '+fixed+' of '+tf+'</b><span>Failed runs that now work</span></div><div class="stat"><b class="st-bad">Broke '+reg+' of '+tg+'</b><span>Working runs that now fail</span></div><div class="stat"><b>1 left</b><span>Needs a data fix, not a new rule</span></div>':
+     '<div class="stat"><b>Running</b><span>Replaying '+BATCH.length+' runs from their mistakes</span></div>';
+  }
+  function all(){$('#brows').innerHTML=BATCH.map(function(r){return rowHtml(r,'done');}).join('');}
+  all();summary(true);
+  $('#rerun').addEventListener('click',async function(){
+    var my=++token,fast=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var b=$('#rerun');b.disabled=true;summary(false);
+    var cells=BATCH.map(function(r){return rowHtml(r,'pending');});
+    $('#brows').innerHTML=cells.join('');
+    for(var k=0;k<BATCH.length;k++){
+      await new Promise(function(r){setTimeout(r,fast?0:320);});if(my!==token)return;
+      cells[k]=rowHtml(BATCH[k],'done');$('#brows').innerHTML=cells.join('');
+    }
+    summary(true);b.disabled=false;
+  });
+}
+
+/* ---------- router ---------- */
+function route(){
+  token++;
+  if(keyHandler){document.removeEventListener('keydown',keyHandler);keyHandler=null;}
+  var h=location.hash.slice(1)||'runs',m;
+  var page='runs';
+  if(h==='batch'){page='batch';viewBatch();}
+  else if((m=h.match(/^run-(r-\d+)$/))&&DETAIL[m[1]]){viewRun(m[1]);document.addEventListener('keydown',keyHandler);}
+  else if((m=h.match(/^replay-(r-\d+)$/))&&DETAIL[m[1]]){viewReplay(m[1]);}
+  else{viewRuns();}
+  $('#nav-runs').setAttribute('aria-current',page==='runs'?'page':'false');
+  $('#nav-batch').setAttribute('aria-current',page==='batch'?'page':'false');
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+route();
+})();
+</script>
+
+</body></html>

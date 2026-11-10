@@ -1,0 +1,6 @@
+{
+  "name": "Rewind",
+  "description": "Debugging and Verified Repair for AI Agents — record agent executions, inspect failure steps, and verify prompt repairs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
